@@ -1,13 +1,12 @@
 %{
-删除tC中多余的面，并生成所有顶点（张宁 202312）
-输入
-    tC 原始的tC = [b, A]
-输出
-    tC 删除多余的面后的tC
-    tcor 多面体所有的顶点
+Generate vertexes by tC
+input:
+    tC: [0, b, N]
+note:
+    tC is updated to remove redundant faces
+=== n_zhang_qh@163.com  NingZhang===
 %}
 function [tC, tcors] = Con3_updateByC(tC)
-% warning('off','MATLAB:rankDeficientMatrix');
 tC  = uniquetol(tC, 1e-6, 'ByRows', true);
 tnf = size(tC,1);
 
@@ -16,24 +15,25 @@ tf_used = false(tnf,1);
 
 % point cap
 tcors = zeros(tnf*3,3);   tnp = 0;
-%tp_f   = cell(tnf*tnf,1);
 Tol = 1e-6;
 
-for ii = 1:tnf
-    for jj = ii+1:tnf
+A = tC(:, 3:5);    b = tC(:, 2);
+for ii = 1:tnf-2
+    for jj = ii+1:tnf-1
         for kk = jj+1:tnf
-            ipf = [ii, jj, kk];
-            iA  = tC(ipf, 3:5); 
-
-            if abs(det(iA)) < Tol
+            
+            detA = A(ii,1) * ( A(jj,2)*A(kk,3) - A(jj,3)*A(kk,2))...
+                + A(ii,2) * ( A(jj,3)*A(kk,1) - A(jj,1)*A(kk,3))...
+                + A(ii,3) * ( A(jj,1)*A(kk,2) - A(jj,2)*A(kk,1));
+         
+            if detA*detA < Tol
                 continue
             end
-            ib = tC(ipf,2); 
-
-            icor = iA\ib;
+            ipf = [ii, jj, kk];
+            icor =  A(ipf, :)\b(ipf);
             
             % check if out side
-            if any(tC(:, 3:5) * icor > tC(:, 2) + Tol)
+            if any(A * icor - b > Tol)
                 continue
             else
                 tcors(tnp+1,:) = icor;
@@ -45,13 +45,10 @@ for ii = 1:tnf
     end % jj
 end % ii
 
-%tp_f(tnp+1:end)    = [];
 tcors(tnp+1:end,:)= [];
 
 % unique
 tcors = uniquetol(tcors, 1e-6, 'ByRows',true);
 tC     = tC(tf_used,:);
-
-% warning('on','MATLAB:rankDeficientMatrix');
 end
 

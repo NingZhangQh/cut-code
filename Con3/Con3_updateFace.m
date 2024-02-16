@@ -1,10 +1,8 @@
 %{
-计算多面体的面（张宁 202312）
-输入
-    tC 凸多面体的tC = [b, A]
-    tcor 凸多面体所有的顶点
-输出
-    tC 凸多面体的tC
+generate faces by tC and tcor
+note: 
+    tC is set to [] if cannot generate enough faces
+=== n_zhang_qh@163.com  NingZhang===
 %}
 function [tC, tf_P] = Con3_updateFace(tC, tcor)
 tol= 1e-6;
@@ -15,7 +13,7 @@ tf_P = cell(nf,1);     % tf_cn = zeros(nf,6);
 
 isEffect = true(nf,1);
 for ii = 1:nf
-    % 找面上的点 
+    % vs on face
     a = tC(ii,3:5);    b = tC(ii,2);
     ips = find(abs(a*tcor'-b) < tol);
     

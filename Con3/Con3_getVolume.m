@@ -1,3 +1,10 @@
+%{
+get volume of a convex by faces and coordinates
+input:
+    F:      faces
+    cor:   vertexes
+=== n_zhang_qh@163.com  NingZhang===
+%}
 function V = Con3_getVolume(F, cor)
 V  = 0;
 cor = cor - cor(1,:);

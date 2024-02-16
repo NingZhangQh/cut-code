@@ -1,3 +1,11 @@
+%{
+generate C by vertexes tcor
+input:
+    tcor: [x, y, z]
+note:
+    tcor is updated to remove rebundant vertexes 
+=== n_zhang_qh@163.com  NingZhang===
+%}
 function [tC, tcor] = Con3_updateByV(tcor)
 Tol = 1e-6;
 tcor = uniquetol(tcor,Tol,'ByRows', true);

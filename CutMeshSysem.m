@@ -1,3 +1,5 @@
+% A class to generate cutmesh on a block
+% === n_zhang_qh@163.com  NingZhang===
 classdef CutMeshSysem < handle % Convex3d
     properties (Constant, Access = private)
         CUBE_F = {[4,1,5,8];[2,3,7,6];[1,2,6,5];[3,4,8,7];[4,3,2,1];[5,6,7,8]};
@@ -5,32 +7,28 @@ classdef CutMeshSysem < handle % Convex3d
     end
     
     properties
-        bk
+        bk          % ConvexSystem
         
-        e_mp
-        e_con
+        e_mp      % ne*8 element nodes 
+        mp_cor   % np*3 node coordinates
         
-        mp_cor  % matrix
-        con_Cor  % cell
-        con_F      % cell
+        e_con     % ne*2 [startID-1, nConInE]
+        con_Cor  % nc*1 cell Vertices of convex
+        con_F      % nc*1 cell Faces of convex
     end
     
     
     methods
-        % 构造方式 Cons
         function obj = CutMeshSysem(tbk)
             if sum(tbk.tag) ~= 1
-                disp("only 1 block is supported")
+                disp("Only 1 block is supported. Please treat blocks one by one")
             else
                 obj.bk = tbk;
             end
         end
         
-        
-        function plot_byFace(obj, fid, meLineWidth)
-            if nargin == 2
-                meLineWidth = 0.2;
-            end
+        function plot_byFace(obj, fid)
+            meLineWidth = 0.2;
             %% 1 for pe
             ncon = sum(obj.e_con(:,2));
             
@@ -87,9 +85,12 @@ classdef CutMeshSysem < handle % Convex3d
                 plot3(xy(:,1),xy(:,2),xy(:,3), 'r', 'linewidth', meLineWidth); % me
             end
         end
-        
+       
+        %{
+            meshH: 1*1 value, the size of the cube
+            meshP0: a point [x, y, z] contained in the mp. This can always take [0,0,0]
+        %}
         function set_mesh(obj, meshH, meshP0)
-            % meshH: value
             
             tbk = obj.bk;
             Cs = tbk.C;    nc   = tbk.count;
@@ -105,10 +106,8 @@ classdef CutMeshSysem < handle % Convex3d
             % get ini hex mesh
             [tmp_cor, te_mp] = mesh_hexUniform(minCor, meshH*nn, nn, true);
             
-            %% 2 [e_mp] 在边界内的数学单元
+            %% 2 [e_mp] 
             [te_isPossInC, te_isFE] = sub_checkEleIn(Cs, tmp_cor, te_mp, meshH);
-            
-            Plot_femMesh(tmp_cor, te_mp, 2);
             
             te_used     = any(te_isPossInC,2);
             
@@ -124,14 +123,14 @@ classdef CutMeshSysem < handle % Convex3d
             tcon_Cor = cell(ne, 1);      
             tcon_F     = cell(ne,1);    
             
-            %% 3 [] 求交集
-            te_del = false(ne,1);         % 物理块体的个数
-            for ii = 1:ne                     % 数学块 ii
+            %% 3 [] intersection
+            te_del = false(ne,1);         
+            for ii = 1:ne                  
                 ncon0 = ncon;
                 if te_isFE(ii)      
                     ncon = ncon + 1;                    
                     tcon_Cor{ncon} = tmp_cor(te_mp(ii,:), :);
-                    tcon_F{ncon}    = CutmeshSysem.CUBE_F;
+                    tcon_F{ncon}    = CutMeshSysem.CUBE_F;
                 else                       
                     for jj = 1:nc
                         if ~te_isPossInC(ii, jj)
@@ -155,7 +154,7 @@ classdef CutMeshSysem < handle % Convex3d
                     te_del(ii) = true;
                 end
             end
-            % 删除多余
+            % clear
             te_con(te_del,:) = [];   te_mp(te_del,:) = [];   te_isFE(te_del,:) = [];
             
             nmp = size(tmp_cor,1);
@@ -173,28 +172,9 @@ classdef CutMeshSysem < handle % Convex3d
 end
 
 
-function [C, cor, F] = sub_cutWithCube(C, p0, H)
-% p0: first point of the cube
-C = [C
-    0,-p0(1), -1, 0, 0
-    0, p0(1)+H,  1, 0, 0
-    0,-p0(2),      0,-1, 0
-    0, p0(2)+H,  0, 1, 0
-    0,-p0(3),      0, 0,-1
-    0, p0(3)+H,  0, 0, 1];
-
-[C, cor] = Con3_updateByC(C);
-
-if ~isempty(cor) % no cor
-    [C, F] = Con3_updateFace(C, cor);
-    if ~isempty(C)  % row of C less than 4
-        return
-    end
-end
-C = [];  F = [];  cor = [];
-end
-
-
+%{
+    prechecking to decide if need cut
+%}
 function [e_isPossInC, e_isFE] = sub_checkEleIn(Cs, mp_cor, e_mp, meshH)
 nC = size(Cs,1);
 
@@ -215,3 +195,30 @@ for ii = 1: nC
     e_isPossInC(:,ii) = Con3_pointIsIn(Cs{ii}, e_mid, TolRough);
 end
 end
+
+%{
+    if need cut, do this
+%}
+function [C, cor, F] = sub_cutWithCube(C, p0, H)
+% p0: first point of the cube
+C = [C
+    0,-p0(1), -1, 0, 0
+    0, p0(1)+H,  1, 0, 0
+    0,-p0(2),      0,-1, 0
+    0, p0(2)+H,  0, 1, 0
+    0,-p0(3),      0, 0,-1
+    0, p0(3)+H,  0, 0, 1];
+
+[C, cor] = Con3_updateByC(C);
+
+if ~isempty(cor) % no cor
+    [C, F] = Con3_updateFace(C, cor);
+    if ~isempty(C)  % row of C less than 4
+        return
+    end
+else
+    C = [];  F = [];  cor = [];
+end
+end
+
+

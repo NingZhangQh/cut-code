@@ -1,4 +1,13 @@
-function [node,element]=Hex_getMesh(p0, len, n, isHex)
+%{
+Generate FEM mesh on a cube
+Input
+    p0:  [xmin, ymin, zmin]  
+    len: [lenx, leny, lenz]   (the size of the cube)
+    n:    [nex, ney, nez]     (number of element in each direction)
+    isHex: 1 hex8 mesh 0 Tet4 mesh
+=== n_zhang_qh@163.com  NingZhang===
+%}
+function [node,element]=mesh_hexUniform(p0, len, n, isHex)
 nnx = n(1) + 1;
 nny = n(2) + 1;
 nnz = n(3) + 1;
@@ -19,7 +28,6 @@ for k=1:nnz
 end
 
 if isHex
-
     chan  = zeros(nnz,nny,nnx);
     count = 1;
     for i=1:nnz
