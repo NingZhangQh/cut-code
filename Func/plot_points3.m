@@ -6,7 +6,7 @@ Input
     ishold: hold on    
 === n_zhang_qh@163.com  NingZhang===
 %}
-function plot_points3(cors, fid, isHold)
+function plot_points3(cors, fid, isHold, isText)
 
 figure(fid);  
 if isHold
@@ -14,7 +14,16 @@ if isHold
 else
     hold off;
 end
+
+if nargin == 3
+    isText = false;
+end
+
 axis equal
 x = cors(:, 1);  y = cors(:, 2); z=cors(:,3);
 plot3(x, y, z,".");
+
+if isText
+    text(x,y,z, num2str([1:numel(x)]'));
+end
 end

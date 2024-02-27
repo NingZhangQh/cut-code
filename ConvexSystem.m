@@ -494,12 +494,34 @@ classdef ConvexSystem < handle % geoInfovex3d
              plot data
         %}   
         function plot_byFace(obj, fid)
-            [cors, fs] = obj.get_plotPatch;
+            [cors, fs] = obj.get_plotPatch();
             
             % plot
             figure(fid);  clf;
             axis equal; view(-37.5,30); xlabel('X');  ylabel('Y'); zlabel('Z');
             patch('Faces',fs,'Vertices',cors,'FaceColor','#4DBEEE','FaceAlpha',0.8);
+        end
+        
+        %{
+             plot single convex with text
+        %}   
+        function show_singleConvex(obj, id, fid, ishold)
+            if nargin == 3
+                ishold = true;
+            end
+           
+             % plot
+            figure(fid);  
+            if ishold 
+                hold on;
+            else
+                hold off;
+            end
+            [cors, fs] = obj.get_plotPatch(id);
+            plot_points3(cors, fid, true, true);
+            
+            axis equal; view(-37.5,30); xlabel('X');  ylabel('Y'); zlabel('Z');
+            patch('Faces',fs,'Vertices',cors,'FaceColor','#4DBEEE', 'FaceAlpha',0.3);
         end
     end    
 end
