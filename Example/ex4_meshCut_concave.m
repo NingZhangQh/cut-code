@@ -30,4 +30,4 @@ cs.plot_byFace(1)
 % cut
 ms = CutMeshSysem(cs);
 ms.set_mesh(0.2, [0,0,0]);
-ms.plot_byFace(2);
+ms.plot_byFace(2,2);

@@ -27,8 +27,10 @@ classdef CutMeshSysem < handle % Convex3d
             end
         end
         
-        function plot_byFace(obj, fid)
-            meLineWidth = 0.2;
+        function plot_byFace(obj, fid, meLineWidth)
+            if nargin == 2
+                meLineWidth = 1;
+            end
             %% 1 for pe
             ncon = sum(obj.e_con(:,2));
             
@@ -213,8 +215,8 @@ C = [C
 
 if ~isempty(cor) % no cor
     [C, F] = Con3_updateFace(C, cor);
-    if ~isempty(C)  % row of C less than 4
-        return
+    if isempty(C)  % row of C less than 4
+        C = [];  F = [];  cor = [];
     end
 else
     C = [];  F = [];  cor = [];

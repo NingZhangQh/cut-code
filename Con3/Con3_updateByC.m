@@ -49,6 +49,10 @@ tcors(tnp+1:end,:)= [];
 
 % unique
 tcors = uniquetol(tcors, 1e-6, 'ByRows',true);
-tC     = tC(tf_used,:);
+if size(tcors,1) < 4
+    tC = [];  tcors = [];
+else
+    tC    = tC(tf_used,:);
+end
 end
 

@@ -12,10 +12,17 @@ cor = [0    0    0
     0.2  1    1
     1     0    0
     1     1    0];
-C = Con3_updateByV(cor);
 
-b = C(:, 2);
+% update C and cor
+[C, cor] = Con3_updateByV(cor);
+
 % "N and b matrix"
 N = C(:, 3:5)
 b = C(:, 2)
+
+% updage faces
+[C, F]  = Con3_updateFace(C, cor);
+
+% plot
+Con3_plotFace(cor, F, 1, 0, 0)
       

@@ -9,6 +9,10 @@ note:
 function [tC, tcor] = Con3_updateByV(tcor)
 Tol = 1e-6;
 tcor = uniquetol(tcor,Tol,'ByRows', true);
+if size(tcor, 1) < 4
+    tC = []; tcor = [];
+    return
+end
 
 % get a cen
 tnp  = size(tcor,1);

@@ -438,6 +438,7 @@ classdef ConvexSystem < handle % geoInfovex3d
                         x3 = icor(tps(kk   ),1);    y3 = icor(tps(kk   ),2);    z3 = icor(tps(kk   ),3);
                         iDet = iDet + x1*(y2*z3-z2*y3) + y1*(z2*x3-x2*z3) + z1*(x2*y3-y2*x3);
                     end
+                    
                 end
                 V(ii) = iDet/6;
             end
@@ -455,13 +456,15 @@ classdef ConvexSystem < handle % geoInfovex3d
         %{
             prepare data for plot 
         %}       
-        function [cors, fs] = get_plotPatch(obj, icons)
+        function [cors, fs, fcolor] = get_plotPatch(obj, icons)
+            
             ncon = obj.count;
             if nargin == 1
                 icons = 1:ncon;
             end
             
-            fnpMax = 0;     nf =0;    
+            fnpMax = 0;     
+            con_nf = zeros(ncon, 1);
             for ii = icons
                 tF = obj.F{ii};  tnf = size(tF,1);
                 for jj =1:tnf
@@ -470,7 +473,25 @@ classdef ConvexSystem < handle % geoInfovex3d
                         fnpMax = cc ;
                     end
                 end
-                nf = nf + tnf;
+                con_nf(ii) = tnf;
+            end
+            nf = sum(con_nf);
+
+            if nargin == 1
+                fcolor = zeros(nf,1);
+                bid = obj.get_blockID();  nb = size(bid,1);
+                rng(1)
+                bcolor = rand(nb, 1);
+                
+                bf0 = 0;
+                for ii = 1: size(bid,1)
+                    bnf = sum(con_nf(bid(ii,1) + 1: bid(ii,1)+bid(ii,2)));
+                    
+                    fcolor(bf0+1 : bf0+bnf, :) = repmat(bcolor(ii,:), bnf, 1);
+                    bf0 = bf0 + bnf;
+                end
+            else
+                fcolor = "#4DBEEE";
             end
             
             % set fs
@@ -493,14 +514,21 @@ classdef ConvexSystem < handle % geoInfovex3d
         %{
              plot data
         %}   
-        function plot_byFace(obj, fid)
-            [cors, fs] = obj.get_plotPatch();
+        function plot_byFace(obj, fid, isRandColor)
+            [cors, fs, fcolor] = obj.get_plotPatch();
+            if nargin == 2
+                isRandColor = true;
+            end
             
             % plot
             figure(fid);  clf;
             axis equal; view(-37.5,30); xlabel('X');  ylabel('Y'); zlabel('Z');
-            patch('Faces',fs,'Vertices',cors,'FaceColor','#4DBEEE','FaceAlpha',0.8);
-        end
+            if isRandColor
+                patch('Faces',fs,'Vertices',cors,'FaceVertexCData',fcolor,'FaceColor','flat','FaceAlpha',0.8, 'linewidth',1);
+            else
+                patch('Faces',fs,'Vertices',cors,'FaceColor','#4DBEEE','FaceAlpha',0.8, 'linewidth',1);
+            end
+         end
         
         %{
              plot single convex with text

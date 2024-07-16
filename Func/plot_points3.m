@@ -21,7 +21,7 @@ end
 
 axis equal
 x = cors(:, 1);  y = cors(:, 2); z=cors(:,3);
-plot3(x, y, z,".");
+scatter3(x, y, z,'filled');
 
 if isText
     text(x,y,z, num2str([1:numel(x)]'));

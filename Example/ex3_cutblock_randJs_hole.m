@@ -43,10 +43,9 @@ cs = ConvexSystem();
 for ii = 1:size(data,1)
     isNewBlock = (ii == 1);
     cs.addConvex_byV([corSlope(data{ii,1}, :); corHole(data{ii,2}, :)], isNewBlock);
-    
-    pause(0.2)
-    cs.plot_byFace(2)
 end
+cs.plot_byFace(2)
+
 rng(1)
 C = rand_C(50);
 cs.add_cut_bothSide(C)
